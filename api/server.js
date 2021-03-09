@@ -53,11 +53,23 @@ server.post("/api/users", (req, res) => {
   }
 });
 
-// 1- pull info from request <optional; and validate it>
-// 2- interact with the database
-// 3- send the client an appropriate response
 
-// server.delete("/api/users/:id", (req, res) => {});
+server.delete("/api/users/:id", async (req, res) => {
+  // 1- pull info from request <optional; and validate it>
+  const {id} = req.params
+  // console.log(id)
+  
+  // 2- interact with the database
+  try{
+    const deleteConfirmation = await actions.remove(id)
+    res.status(200).send(deleteConfirmation)
+  } catch (err) {
+    res.status(400).send(err.message)
+  }
+
+  // 3- send the client an appropriate response
+
+});
 // server.put("/api/users/:id", (req, res) => {});
 
 module.exports = server; // EXPORT YOUR SERVER instead of {}
@@ -72,6 +84,7 @@ module.exports = server; // EXPORT YOUR SERVER instead of {}
 2. What is the best way to inspect the request object from within the endpoint. I've tried to return the request object to my postman via res.send() but get the following: "TypeError: Converting circular structure to JSON"
 2b. How do you suggest inspecting the error that comes back from either the .catch in then/catch or from .catch(err) in try/catch. I never know if what I'm looking for is in err or in err.message or otherwise.
 3. What is the best/easier ways to break our promises and try/catches if we want to test the different ways an error might occur? What are the main types of errors we will want to keep in mind to handle?
+4. I wrote a "server" script in my package.json that only works when I write 'npm run server' into the terminal, 'npm server' does not work. Why is this, when 'npm start' works just as well as 'npm run start' (the 'run' seems optional here)
 */
 //todo
 //*

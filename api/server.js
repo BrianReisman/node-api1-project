@@ -6,14 +6,15 @@ const server = express();
 
 server.use(express.json());
 
+//promise. chaining .then().catch() onto an action invoked.
 server.get("/api/users", async (req, res) => {
   actions.find()
     .then(users => {
-      if(!users){
-        // console.log('promise resolved but no data')
+      if(!users || users.length === 0){
+        console.log('promise resolved but no data')
         res.status(400).send({message: 'no users found'}) //!Check status code
       } else {
-        // console.log(users, 'log')
+        console.log('users, users, we got some users here!', users)
         res.status(200).send(users)
       }
     })
@@ -27,8 +28,19 @@ server.get("/api/users", async (req, res) => {
 });
 
 
+//async/await needs to be put in a try/catch so give that which is being awaited on, a chance to resolve.
+server.get("/api/users/:id", async (req, res) => {
+  const {id} = req.params;
+  try{
+    const user = await actions.findById(id)
+    console.log(user)
+    res.status(200).send(user)
+  } catch(err){
+    console.log(err)
+  }
+});
+
 // server.post("/api/users", (req, res) => {});
-// server.get("/api/users/:id", (req, res) => {});
 // server.delete("/api/users/:id", (req, res) => {});
 // server.put("/api/users/:id", (req, res) => {});
 

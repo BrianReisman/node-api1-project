@@ -53,24 +53,51 @@ server.post("/api/users", (req, res) => {
   }
 });
 
-
 server.delete("/api/users/:id", async (req, res) => {
   // 1- pull info from request <optional; and validate it>
-  const {id} = req.params
-  // console.log(id)
-  
+  const { id } = req.params;
+  console.log(id);
+
   // 2- interact with the database
-  try{
-    const deleteConfirmation = await actions.remove(id)
-    res.status(200).send(deleteConfirmation)
+  try {
+    const deleteConfirmation = await actions.remove(id);
+    if (!deleteConfirmation) {
+      res.status(400).send("No user by that id exists");
+    } else {
+      // 3- send the client an appropriate response
+      res.status(200).send(deleteConfirmation);
+    }
   } catch (err) {
-    res.status(400).send(err.message)
+    res.status(400).send(err.message);
   }
-
-  // 3- send the client an appropriate response
-
 });
-// server.put("/api/users/:id", (req, res) => {});
+
+server.put("/api/users/:id", (req, res) => {
+  //arrange the pieces
+  const { id } = req.params;
+  const updatedUser = req.body;
+
+  actions
+    .update(id, updatedUser)
+    .then((data) => {
+      if (!data) {
+        //return/resolve
+        res
+          .status(400)
+          .json(
+            "Opps! There is an issue. Either there's no user with that idea, or we messed up!"
+          );
+      } else {
+        //return/resolve
+        res.status(200).json(data);
+      }
+    })
+    //return/resolve
+    .catch((err) => {
+      res.status(400).json(err);
+      // console.log(err);
+    });
+});
 
 module.exports = server; // EXPORT YOUR SERVER instead of {}
 

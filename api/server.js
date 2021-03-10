@@ -19,7 +19,7 @@ server.get("/api/users", async (req, res) => {
     })
     .catch((err) => {
       console.log("error in request", err);
-      res.status(400).send(err);
+      res.status(500).json({ message: err });
     });
 });
 
@@ -28,9 +28,12 @@ server.get("/api/users/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const user = await actions.findById(id);
-    res.status(200).send(user);
+    if (!user) {
+      res.status(400).json({ message: "no such user" });
+    }
+    res.status(200).json(user);
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -42,21 +45,24 @@ server.post("/api/users", (req, res) => {
     name.length < 1 ||
     bio.length < 1
   ) {
-    res.status(400).json("All inputs are required");
+    res
+      .status(400)
+      .json(
+        "the request body object must contain no more or less than a name and bio property"
+      );
   } else {
     actions
       .insert(req.body)
       .then((data) => {
         res.status(200).send(data);
       })
-      .catch((err) => res.status(400).send(err, "error"));
+      .catch((err) => res.status(500).json({ error: err }));
   }
 });
 
 server.delete("/api/users/:id", async (req, res) => {
   // 1- pull info from request <optional; and validate it>
   const { id } = req.params;
-  console.log(id);
 
   // 2- interact with the database
   try {
@@ -68,7 +74,7 @@ server.delete("/api/users/:id", async (req, res) => {
       res.status(200).send(deleteConfirmation);
     }
   } catch (err) {
-    res.status(400).send(err.message);
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -77,26 +83,34 @@ server.put("/api/users/:id", (req, res) => {
   const { id } = req.params;
   const updatedUser = req.body;
 
-  actions
-    .update(id, updatedUser)
-    .then((data) => {
-      if (!data) {
-        //return/resolve
-        res
-          .status(400)
-          .json(
-            "Opps! There is an issue. Either there's no user with that idea, or we messed up!"
-          );
-      } else {
-        //return/resolve
-        res.status(200).json(data);
-      }
-    })
-    //return/resolve
-    .catch((err) => {
-      res.status(400).json(err);
-      // console.log(err);
-    });
+  if (
+    typeof updatedUser.name !== "string" ||
+    typeof updatedUser.bio !== "string" ||
+    updatedUser.name.length < 1 ||
+    updatedUser.bio.length < 1
+  ) {
+    res.status(400).json({message: 'must contain the goods to work!'})
+  } else {
+    actions
+      .update(id, updatedUser)
+      .then((data) => {
+        if (!data) {
+          //return/resolve
+          res
+            .status(400)
+            .send(
+              "Opps! There is an issue. Either there's no user with that idea, or we messed up!"
+            );
+        } else {
+          //return/resolve
+          res.status(200).json(data);
+        }
+      })
+      //return/resolve
+      .catch((err) => {
+        res.status(400).json({ message: err });
+      });
+  }
 });
 
 module.exports = server; // EXPORT YOUR SERVER instead of {}

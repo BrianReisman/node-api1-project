@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "cross-env NODE_ENV=testing jest --watch --verbose --runInBand",
-    "server": "nodemon index.js"
+    "server": "nodemon index.js",
+    "banana": "git add ."
   },
   "devDependencies": {
     "@types/jest": "^26.0.20",
